@@ -1087,6 +1087,72 @@ pub trait GenericImageView {
     }
 }
 
+impl<T: GenericImageView> GenericImageView for &T {
+    type Pixel = <T as GenericImageView>::Pixel;
+
+    fn dimensions(&self) -> (u32, u32) {
+        <T as GenericImageView>::dimensions(*self)
+    }
+
+    fn width(&self) -> u32 {
+        <T as GenericImageView>::width(*self)
+    }
+
+    fn height(&self) -> u32 {
+        <T as GenericImageView>::height(*self)
+    }
+
+    fn bounds(&self) -> (u32, u32, u32, u32) {
+        #[allow(deprecated)]
+        <T as GenericImageView>::bounds(*self)
+    }
+
+    fn in_bounds(&self, x: u32, y: u32) -> bool {
+        <T as GenericImageView>::in_bounds(*self, x, y)
+    }
+
+    fn get_pixel(&self, x: u32, y: u32) -> Self::Pixel {
+        <T as GenericImageView>::get_pixel(*self, x, y)
+    }
+
+    unsafe fn unsafe_get_pixel(&self, x: u32, y: u32) -> Self::Pixel {
+        <T as GenericImageView>::unsafe_get_pixel(*self, x, y)
+    }
+}
+
+impl<T: GenericImageView> GenericImageView for &mut T {
+    type Pixel = <T as GenericImageView>::Pixel;
+
+    fn dimensions(&self) -> (u32, u32) {
+        <T as GenericImageView>::dimensions(*self)
+    }
+
+    fn width(&self) -> u32 {
+        <T as GenericImageView>::width(*self)
+    }
+
+    fn height(&self) -> u32 {
+        <T as GenericImageView>::height(*self)
+    }
+
+    fn bounds(&self) -> (u32, u32, u32, u32) {
+        #[allow(deprecated)]
+        <T as GenericImageView>::bounds(*self)
+    }
+
+    fn in_bounds(&self, x: u32, y: u32) -> bool {
+        <T as GenericImageView>::in_bounds(*self, x, y)
+    }
+
+    fn get_pixel(&self, x: u32, y: u32) -> Self::Pixel {
+        <T as GenericImageView>::get_pixel(*self, x, y)
+    }
+
+    unsafe fn unsafe_get_pixel(&self, x: u32, y: u32) -> Self::Pixel {
+        <T as GenericImageView>::unsafe_get_pixel(*self, x, y)
+    }
+}
+
 /// A trait for manipulating images.
 pub trait GenericImage: GenericImageView {
     /// Gets a reference to the mutable pixel at location `(x, y)`. Indexed from top left.
@@ -1231,6 +1297,37 @@ pub trait GenericImage: GenericImageView {
         assert!(x as u64 + width as u64 <= self.width() as u64);
         assert!(y as u64 + height as u64 <= self.height() as u64);
         SubImage::new(self, x, y, width, height)
+    }
+}
+
+impl<T: GenericImage> GenericImage for &mut T {
+    fn get_pixel_mut(&mut self, x: u32, y: u32) -> &mut Self::Pixel {
+        #[allow(deprecated)]
+        <T as GenericImage>::get_pixel_mut(*self, x, y)
+    }
+
+    fn put_pixel(&mut self, x: u32, y: u32, pixel: Self::Pixel) {
+        <T as GenericImage>::put_pixel(*self, x, y, pixel)
+    }
+
+    unsafe fn unsafe_put_pixel(&mut self, x: u32, y: u32, pixel: Self::Pixel) {
+        <T as GenericImage>::unsafe_put_pixel(*self, x, y, pixel)
+    }
+
+    fn blend_pixel(&mut self, x: u32, y: u32, pixel: Self::Pixel) {
+        #[allow(deprecated)]
+        <T as GenericImage>::blend_pixel(*self, x, y, pixel)
+    }
+
+    fn copy_from<O>(&mut self, other: &O, x: u32, y: u32) -> ImageResult<()>
+    where
+        O: GenericImageView<Pixel = Self::Pixel>,
+    {
+        <T as GenericImage>::copy_from(*self, other, x, y)
+    }
+
+    fn copy_within(&mut self, source: Rect, x: u32, y: u32) -> bool {
+        <T as GenericImage>::copy_within(*self, source, x, y)
     }
 }
 
